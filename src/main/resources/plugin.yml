@@ -1,0 +1,3 @@
+name: RandomHub
+version: ${project.version}
+main: me.jaimemartz.randomhub.RandomHub
