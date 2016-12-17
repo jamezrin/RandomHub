@@ -27,7 +27,7 @@ public class PingManager {
         tactic = ConfigEntries.SERVER_CHECK_GENERIC.get() ? new GenericTactic() : new CustomTactic();
         long interval = ConfigEntries.SERVER_CHECK_INTERVAL.get();
         main.getLogger().info(String.format("Starting the ping task, the interval is %s", interval));
-        task = main.getProxy().getScheduler().schedule(main, (Runnable) () -> {
+        task = main.getProxy().getScheduler().schedule(main, () -> {
             for (ServerInfo server : main.getProxy().getServers().values()) {
                 if (stopped) break;
                 if (server != null) {

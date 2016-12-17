@@ -14,7 +14,7 @@ public final class ServerStatus {
         boolean accessible = true;
         if (maximum != 0) {
             for (String pattern : ConfigEntries.SERVER_CHECK_MARKERS.get()) {
-                if (description.contains(pattern) || description.matches(pattern)) {
+                if (description.matches(pattern)) {
                     accessible = false;
                 }
             }

@@ -21,7 +21,6 @@ public class ServerConnectListener implements Listener {
         ServerInfo target = event.getTarget();
 
         if (plugin.getServers().contains(target)) {
-            event.setCancelled(true);
             new ConnectionAttempt(plugin, player) {
                 @Override
                 public void connect(ServerInfo server) {
