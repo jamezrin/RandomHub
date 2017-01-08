@@ -65,7 +65,8 @@ public final class RandomHub extends Plugin {
             PingManager.start(this);
         }
 
-        getProxy().getPluginManager().registerListener(this, connectListener = new ServerConnectListener(this));
+        connectListener = new ServerConnectListener(this);
+        getProxy().getPluginManager().registerListener(this, connectListener);
 
         if (ConfigEntries.KICK_RECONNECT_ENABLED.get()) {
             getProxy().getPluginManager().registerListener(this, kickListener = new ServerKickListener(this));
@@ -78,10 +79,16 @@ public final class RandomHub extends Plugin {
 
     @Override
     public void onDisable() {
-        getProxy().getPluginManager().unregisterCommand(command);
+        if (ConfigEntries.SERVER_CHECK_ENABLED.get()) {
+            PingManager.stop();
+        }
 
         if (ConfigEntries.KICK_RECONNECT_ENABLED.get()) {
             getProxy().getPluginManager().unregisterListener(kickListener);
+        }
+
+        if (ConfigEntries.COMMAND_ENABLED.get()) {
+            getProxy().getPluginManager().unregisterCommand(command);
         }
     }
 

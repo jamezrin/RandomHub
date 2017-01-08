@@ -22,7 +22,7 @@ public class ServerConnectListener implements Listener {
         ServerInfo target = event.getTarget();
         Server server = player.getServer();
 
-        if (server != null && !plugin.getServers().contains(server.getInfo())) {
+        if (server == null || !plugin.getServers().contains(server.getInfo())) {
             if (plugin.getServers().contains(target)) {
                 new ConnectionAttempt(plugin, player) {
                     @Override
