@@ -22,7 +22,7 @@ public class LobbyCommand extends Command {
         Messager msgr = new Messager(sender);
         if (sender instanceof ProxiedPlayer) {
             ProxiedPlayer player = (ProxiedPlayer) sender;
-            if (plugin.getServers().contains(player.getServer().getInfo())) {
+            if (!plugin.getServers().contains(player.getServer().getInfo())) {
                 new ConnectionAttempt(plugin, player) {
                     @Override
                     public void connect(ServerInfo server) {

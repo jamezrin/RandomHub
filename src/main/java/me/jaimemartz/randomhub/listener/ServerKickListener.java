@@ -25,6 +25,10 @@ public class ServerKickListener implements Listener {
         String reason = TextComponent.toPlainText(event.getKickReasonComponent());
         ServerInfo from = event.getKickedFrom();
 
+        if (player.getServer() == null) {
+            return;
+        }
+
         if (from.equals(player.getServer().getInfo())) {
             for (String regex : ConfigEntries.KICK_RECONNECT_REASONS.get()) {
                 if (reason.matches(regex)) {

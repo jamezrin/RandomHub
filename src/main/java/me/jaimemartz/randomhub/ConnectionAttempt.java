@@ -16,9 +16,7 @@ public abstract class ConnectionAttempt {
     private final Random random = new SecureRandom();
     public ConnectionAttempt(RandomHub plugin, ProxiedPlayer player) {
         Messager msgr = new Messager(player);
-        msgr.send(ConfigEntries.CONNECTING_MESSAGE.get()
-                .replace("{amount}", ConfigEntries.DELAY_AMOUNT.toString())
-        );
+        msgr.send(ConfigEntries.CONNECTING_MESSAGE.get());
 
         int intents = ConfigEntries.SERVER_CHECK_INTENTS.get();
         List<ServerInfo> storage = new ArrayList<>();
