@@ -15,6 +15,7 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 import org.inventivetalent.update.bungee.BungeeUpdater;
+import org.mcstats.Metrics;
 
 import java.io.IOException;
 import java.security.SecureRandom;
@@ -74,6 +75,13 @@ public final class RandomHub extends Plugin implements Listener {
         }
 
         getProxy().getPluginManager().registerListener(this, this);
+
+        try {
+            Metrics metrics = new Metrics(this);
+            metrics.start();
+        } catch (IOException e) {
+            // Failed to submit the stats :-(
+        }
     }
 
     @Override
