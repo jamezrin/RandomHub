@@ -1,7 +1,8 @@
 package me.jaimemartz.randomhub.listener;
 
-import me.jaimemartz.randomhub.ConnectionAttempt;
+import me.jaimemartz.randomhub.manager.ConnectionAttempt;
 import me.jaimemartz.randomhub.RandomHub;
+import me.jaimemartz.randomhub.manager.PlayerLocker;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
@@ -20,6 +21,10 @@ public class ServerConnectListener implements Listener {
     public void on(ServerConnectEvent event) {
         ProxiedPlayer player = event.getPlayer();
         ServerInfo target = event.getTarget();
+
+        if (PlayerLocker.isLocked(player))
+            return;
+
         Server server = player.getServer();
 
         if (server == null || !plugin.getServers().contains(server.getInfo())) {

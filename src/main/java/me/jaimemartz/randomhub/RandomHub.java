@@ -6,11 +6,14 @@ import me.jaimemartz.randomhub.command.LobbyCommand;
 import me.jaimemartz.randomhub.config.ConfigEntries;
 import me.jaimemartz.randomhub.listener.ServerConnectListener;
 import me.jaimemartz.randomhub.listener.ServerKickListener;
+import me.jaimemartz.randomhub.manager.PlayerLocker;
 import me.jaimemartz.randomhub.ping.PingManager;
 import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.event.EventHandler;
 import org.inventivetalent.update.bungee.BungeeUpdater;
 
 import java.io.IOException;
@@ -21,13 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public final class RandomHub extends Plugin {
-    private ServerListPing pinger;
-    private Listener connectListener, kickListener;
-    private Command command;
-    private final SecureRandom random = new SecureRandom();
+public final class RandomHub extends Plugin implements Listener {
     private List<ServerInfo> servers = Collections.synchronizedList(new ArrayList<>());
-
     private ConfigFactory factory;
 
     @Override
@@ -65,16 +63,17 @@ public final class RandomHub extends Plugin {
             PingManager.start(this);
         }
 
-        connectListener = new ServerConnectListener(this);
-        getProxy().getPluginManager().registerListener(this, connectListener);
+        getProxy().getPluginManager().registerListener(this, new ServerConnectListener(this));
 
         if (ConfigEntries.KICK_RECONNECT_ENABLED.get()) {
-            getProxy().getPluginManager().registerListener(this, kickListener = new ServerKickListener(this));
+            getProxy().getPluginManager().registerListener(this, new ServerKickListener(this));
         }
 
         if (ConfigEntries.COMMAND_ENABLED.get()) {
-            getProxy().getPluginManager().registerCommand(this, command = new LobbyCommand(this));
+            getProxy().getPluginManager().registerCommand(this, new LobbyCommand(this));
         }
+
+        getProxy().getPluginManager().registerListener(this, this);
     }
 
     @Override
@@ -83,16 +82,15 @@ public final class RandomHub extends Plugin {
             PingManager.stop();
         }
 
-        if (ConfigEntries.KICK_RECONNECT_ENABLED.get()) {
-            getProxy().getPluginManager().unregisterListener(kickListener);
-        }
-
-        if (ConfigEntries.COMMAND_ENABLED.get()) {
-            getProxy().getPluginManager().unregisterCommand(command);
-        }
+        PlayerLocker.flush();
     }
 
     public List<ServerInfo> getServers() {
         return servers;
+    }
+
+    @EventHandler
+    public void onDisconnect(PlayerDisconnectEvent event) {
+        PlayerLocker.unlock(event.getPlayer());
     }
 }

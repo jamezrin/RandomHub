@@ -1,6 +1,6 @@
 package me.jaimemartz.randomhub.listener;
 
-import me.jaimemartz.randomhub.ConnectionAttempt;
+import me.jaimemartz.randomhub.manager.ConnectionAttempt;
 import me.jaimemartz.randomhub.RandomHub;
 import me.jaimemartz.randomhub.config.ConfigEntries;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -9,8 +9,6 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.ServerKickEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
-
-import java.util.regex.Pattern;
 
 public class ServerKickListener implements Listener {
     private final RandomHub plugin;

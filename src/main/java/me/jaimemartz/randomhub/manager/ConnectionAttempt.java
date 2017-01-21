@@ -1,6 +1,7 @@
-package me.jaimemartz.randomhub;
+package me.jaimemartz.randomhub.manager;
 
 import me.jaimemartz.faucet.Messager;
+import me.jaimemartz.randomhub.RandomHub;
 import me.jaimemartz.randomhub.config.ConfigEntries;
 import me.jaimemartz.randomhub.ping.PingManager;
 import me.jaimemartz.randomhub.ping.ServerStatus;

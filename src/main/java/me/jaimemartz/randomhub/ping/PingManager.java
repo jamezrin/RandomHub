@@ -16,19 +16,19 @@ public class PingManager {
     private static PingTactic tactic;
     private static ScheduledTask task;
     private static boolean stopped;
-    private static RandomHub main;
+    private static RandomHub plugin;
     private static final Map<ServerInfo, ServerStatus> storage = new HashMap<>();
 
-    public static void start(final RandomHub instance) {
+    public static void start(RandomHub instance) {
         if (task != null) stop();
         stopped = false;
 
-        main = instance;
+        plugin = instance;
         tactic = ConfigEntries.SERVER_CHECK_GENERIC.get() ? new GenericTactic() : new CustomTactic();
         long interval = ConfigEntries.SERVER_CHECK_INTERVAL.get();
-        main.getLogger().info(String.format("Starting the ping task, the interval is %s", interval));
-        task = main.getProxy().getScheduler().schedule(main, () -> {
-            for (ServerInfo server : main.getProxy().getServers().values()) {
+        plugin.getLogger().info(String.format("Starting the ping task, the interval is %s", interval));
+        task = plugin.getProxy().getScheduler().schedule(plugin, () -> {
+            for (ServerInfo server : plugin.getProxy().getServers().values()) {
                 if (stopped) break;
                 if (server != null) {
                     track(server);
@@ -43,7 +43,7 @@ public class PingManager {
             task = null;
             storage.clear();
             stopped = true;
-            main = null;
+            plugin = null;
         }
     }
 
@@ -52,7 +52,7 @@ public class PingManager {
             @Override
             public void onPong(ServerStatus status) {
                 if (ConfigEntries.SERVER_CHECK_INFO.get()) {
-                    main.getLogger().info(String.format("Tracking server %s, status: [Description: \"%s\", Online Players: %s, Maximum Players: %s, Accessible: %s]",
+                    plugin.getLogger().info(String.format("Tracking server %s, status: [Description: \"%s\", Online Players: %s, Maximum Players: %s, Accessible: %s]",
                             server.getName(),
                             status.getDescription(),
                             status.getOnlinePlayers(),
@@ -62,7 +62,7 @@ public class PingManager {
 
                 storage.put(server, status);
             }
-        }, main);
+        }, plugin);
     }
 
     public static ServerStatus getStatus(ServerInfo server) {
