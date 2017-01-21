@@ -1,24 +1,21 @@
 package me.jaimemartz.randomhub;
 
 import me.jaimemartz.faucet.ConfigFactory;
-import me.jaimemartz.faucet.ServerListPing;
 import me.jaimemartz.randomhub.command.LobbyCommand;
 import me.jaimemartz.randomhub.config.ConfigEntries;
 import me.jaimemartz.randomhub.listener.ServerConnectListener;
 import me.jaimemartz.randomhub.listener.ServerKickListener;
 import me.jaimemartz.randomhub.manager.PlayerLocker;
 import me.jaimemartz.randomhub.ping.PingManager;
+import me.jaimemartz.randomhub.utils.Metrics;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
-import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 import org.inventivetalent.update.bungee.BungeeUpdater;
-import org.mcstats.Metrics;
 
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -76,12 +73,8 @@ public final class RandomHub extends Plugin implements Listener {
 
         getProxy().getPluginManager().registerListener(this, this);
 
-        try {
-            Metrics metrics = new Metrics(this);
-            metrics.start();
-        } catch (IOException e) {
-            // Failed to submit the stats :-(
-        }
+        //Metrics (https://bstats.org/)
+        new Metrics(this);
     }
 
     @Override
