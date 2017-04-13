@@ -1,10 +1,6 @@
-package me.jaimemartz.randomhub.command;
+package me.jaimemartz.randomhub;
 
 import me.jaimemartz.faucet.Messager;
-import me.jaimemartz.randomhub.manager.ConnectionAttempt;
-import me.jaimemartz.randomhub.RandomHub;
-import me.jaimemartz.randomhub.config.ConfigEntries;
-import me.jaimemartz.randomhub.manager.PlayerLocker;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -26,10 +22,10 @@ public class LobbyCommand extends Command {
         if (sender instanceof ProxiedPlayer) {
             ProxiedPlayer player = (ProxiedPlayer) sender;
             if (!plugin.getServers().contains(player.getServer().getInfo())) {
-                PlayerLocker.lock(player);
-                new ConnectionAttempt(plugin, player) {
+                new ConnectionIntent(plugin, player) {
                     @Override
                     public void connect(ServerInfo server) {
+                        PlayerLocker.lock(player);
                         player.connect(server);
                         plugin.getProxy().getScheduler().schedule(plugin, () -> {
                             PlayerLocker.unlock(player);

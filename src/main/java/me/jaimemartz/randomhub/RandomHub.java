@@ -1,15 +1,13 @@
 package me.jaimemartz.randomhub;
 
 import me.jaimemartz.faucet.ConfigFactory;
-import me.jaimemartz.randomhub.command.LobbyCommand;
-import me.jaimemartz.randomhub.config.ConfigEntries;
-import me.jaimemartz.randomhub.listener.ServerConnectListener;
-import me.jaimemartz.randomhub.listener.ServerKickListener;
-import me.jaimemartz.randomhub.manager.PlayerLocker;
-import me.jaimemartz.randomhub.ping.PingManager;
-import me.jaimemartz.randomhub.utils.Metrics;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
+import net.md_5.bungee.api.event.ServerConnectEvent;
+import net.md_5.bungee.api.event.ServerKickEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
@@ -20,10 +18,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public final class RandomHub extends Plugin implements Listener {
     private List<ServerInfo> servers = Collections.synchronizedList(new ArrayList<>());
+    private PingManager pingManager;
     private ConfigFactory factory;
 
     @Override
@@ -58,17 +58,7 @@ public final class RandomHub extends Plugin implements Listener {
         getLogger().info(String.format("A total of %s servers have been added to the plugin", servers.size()));
 
         if (ConfigEntries.SERVER_CHECK_ENABLED.get()) {
-            PingManager.start(this);
-        }
-
-        getProxy().getPluginManager().registerListener(this, new ServerConnectListener(this));
-
-        if (ConfigEntries.KICK_RECONNECT_ENABLED.get()) {
-            getProxy().getPluginManager().registerListener(this, new ServerKickListener(this));
-        }
-
-        if (ConfigEntries.COMMAND_ENABLED.get()) {
-            getProxy().getPluginManager().registerCommand(this, new LobbyCommand(this));
+            pingManager = new PingManager(this);
         }
 
         getProxy().getPluginManager().registerListener(this, this);
@@ -80,7 +70,8 @@ public final class RandomHub extends Plugin implements Listener {
     @Override
     public void onDisable() {
         if (ConfigEntries.SERVER_CHECK_ENABLED.get()) {
-            PingManager.stop();
+            pingManager.stop();
+            pingManager = null;
         }
 
         PlayerLocker.flush();
@@ -93,5 +84,63 @@ public final class RandomHub extends Plugin implements Listener {
     @EventHandler
     public void onDisconnect(PlayerDisconnectEvent event) {
         PlayerLocker.unlock(event.getPlayer());
+    }
+
+    @EventHandler
+    public void on(ServerConnectEvent event) {
+        ProxiedPlayer player = event.getPlayer();
+        ServerInfo target = event.getTarget();
+
+        if (PlayerLocker.isLocked(player))
+            return;
+
+        Server server = player.getServer();
+
+        if (server == null || !servers.contains(server.getInfo())) {
+            if (servers.contains(target)) {
+                new ConnectionIntent(this, player) {
+                    @Override
+                    public void connect(ServerInfo server) {
+                        event.setTarget(server);
+                    }
+                };
+            }
+        }
+    }
+
+    @EventHandler
+    public void on(ServerKickEvent event) {
+        if (ConfigEntries.KICK_RECONNECT_ENABLED.get()) {
+            ProxiedPlayer player = event.getPlayer();
+            String reason = TextComponent.toPlainText(event.getKickReasonComponent());
+            ServerInfo from = event.getKickedFrom();
+
+            if (player.getServer() == null) {
+                return;
+            }
+
+            if (from.equals(player.getServer().getInfo())) {
+                for (String regex : ConfigEntries.KICK_RECONNECT_REASONS.get()) {
+                    if (reason.matches(regex)) {
+                        new ConnectionIntent(this, player) {
+                            @Override
+                            public void connect(ServerInfo server) {
+                                PlayerLocker.lock(player);
+                                event.setCancelled(true);
+                                event.setCancelServer(server);
+                                getProxy().getScheduler().schedule(RandomHub.this, () -> {
+                                    PlayerLocker.unlock(player);
+                                }, 5, TimeUnit.SECONDS);
+                            }
+                        };
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    public PingManager getPingManager() {
+        return pingManager;
     }
 }

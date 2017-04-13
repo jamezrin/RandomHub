@@ -1,4 +1,4 @@
-package me.jaimemartz.randomhub.manager;
+package me.jaimemartz.randomhub;
 
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 

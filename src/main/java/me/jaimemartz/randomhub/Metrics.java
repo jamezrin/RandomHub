@@ -1,4 +1,4 @@
-package me.jaimemartz.randomhub.utils;
+package me.jaimemartz.randomhub;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
