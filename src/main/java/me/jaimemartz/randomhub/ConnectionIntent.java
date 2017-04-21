@@ -35,7 +35,7 @@ public abstract class ConnectionIntent {
                 return storage.get(0);
             }
 
-            PingStatus status = plugin.getPingManager().getStatus(server);
+            StatusInfo status = plugin.getStatusManager().getStatus(server);
             if (status.isAccessible()) {
                 return server;
             } else {

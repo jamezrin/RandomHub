@@ -1,11 +1,21 @@
 package me.jaimemartz.randomhub;
 
-public final class PingStatus {
+import net.md_5.bungee.api.config.ServerInfo;
+
+public final class StatusInfo {
     private final String description;
     private final int online, maximum;
     private boolean outdated = true;
 
-    public PingStatus(String description, int online, int maximum) {
+    public StatusInfo() {
+        this("Server Unreachable", 0, 0);
+    }
+
+    public StatusInfo(ServerInfo server) {
+        this(server.getMotd(), server.getPlayers().size(), Integer.MAX_VALUE);
+    }
+
+    public StatusInfo(String description, int online, int maximum) {
         this.description = description;
         this.online = online;
         this.maximum = maximum;
@@ -42,10 +52,6 @@ public final class PingStatus {
             }
         }
 
-        if (online >= maximum) {
-            return false;
-        }
-
-        return true;
+        return online < maximum;
     }
 }

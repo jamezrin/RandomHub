@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 
 public final class RandomHub extends Plugin implements Listener {
     private List<ServerInfo> servers = Collections.synchronizedList(new ArrayList<>());
-    private PingManager pingManager;
+    private StatusManager statusManager;
     private ConfigFactory factory;
 
     @Override
@@ -57,8 +57,13 @@ public final class RandomHub extends Plugin implements Listener {
         }
         getLogger().info(String.format("A total of %s servers have been added to the plugin", servers.size()));
 
+        statusManager = new StatusManager();
         if (ConfigEntries.SERVER_CHECK_ENABLED.get()) {
-            pingManager = new PingManager(this);
+            statusManager.start(this);
+        }
+
+        if (ConfigEntries.COMMAND_ENABLED.get()) {
+            getProxy().getPluginManager().registerCommand(this, new LobbyCommand(this));
         }
 
         getProxy().getPluginManager().registerListener(this, this);
@@ -70,8 +75,7 @@ public final class RandomHub extends Plugin implements Listener {
     @Override
     public void onDisable() {
         if (ConfigEntries.SERVER_CHECK_ENABLED.get()) {
-            pingManager.stop();
-            pingManager = null;
+            statusManager.stop();
         }
 
         PlayerLocker.flush();
@@ -140,7 +144,7 @@ public final class RandomHub extends Plugin implements Listener {
         }
     }
 
-    public PingManager getPingManager() {
-        return pingManager;
+    public StatusManager getStatusManager() {
+        return statusManager;
     }
 }

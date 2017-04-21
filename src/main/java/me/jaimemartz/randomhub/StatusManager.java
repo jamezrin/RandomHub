@@ -7,13 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class PingManager {
+public class StatusManager {
     private boolean stopped = true;
     private PingTactic tactic;
     private ScheduledTask task;
-    private final Map<ServerInfo, PingStatus> storage = new HashMap<>();
+    private final Map<ServerInfo, StatusInfo> storage = new HashMap<>();
 
-    public PingManager(RandomHub plugin) {
+    public void start(RandomHub plugin) {
         if (task != null) {
             stop();
         }
@@ -26,13 +26,15 @@ public class PingManager {
             storage.forEach((k, v) -> v.setOutdated(true));
 
             for (ServerInfo server : plugin.getServers()) {
-                if (stopped)
+                if (stopped) {
                     break;
+                }
 
                 if (getStatus(server).isOutdated()) {
-                    track(plugin, server);
+                    update(plugin, server);
                 }
             }
+
         }, 0L, ConfigEntries.SERVER_CHECK_INTERVAL.get(), TimeUnit.MILLISECONDS);
     }
 
@@ -44,10 +46,10 @@ public class PingManager {
         }
     }
 
-    private void track(RandomHub plugin, ServerInfo server) {
+    private void update(RandomHub plugin, ServerInfo server) {
         tactic.ping(server, (status, throwable) -> {
             if (status == null) {
-                status = new PingStatus("Server Unreachable", 0, 0);
+                status = new StatusInfo();
             }
 
             status.setOutdated(false);
@@ -55,13 +57,13 @@ public class PingManager {
         }, plugin);
     }
 
-    public PingStatus getStatus(ServerInfo server) {
-        PingStatus status = storage.get(server);
+    public StatusInfo getStatus(ServerInfo server) {
+        StatusInfo status = storage.get(server);
 
         if (status == null) {
-            status = new PingStatus(server.getMotd(), server.getPlayers().size(), Integer.MAX_VALUE);
+            return new StatusInfo(server);
+        } else {
+            return status;
         }
-
-        return status;
     }
 }
